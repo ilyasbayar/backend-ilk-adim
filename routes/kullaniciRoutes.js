@@ -1,6 +1,7 @@
 // routes/kullaniciRoutes.js
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
 // Controller'ı çağırıyoruz
 const kullaniciController = require("../controllers/kullaniciController");
 
@@ -11,6 +12,6 @@ router.post("/kayit", kullaniciController.kullaniciEkle);
 router.post("/giris", kullaniciController.girisYap);
 
 // '/listele' adresine GET gelirse, controller'daki kullanicilariGetir çalışsın
-router.get("/listele", kullaniciController.kullanicilariGetir);
+router.get("/listele", authMiddleware, kullaniciController.kullanicilariGetir);
 
 module.exports = router;
