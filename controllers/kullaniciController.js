@@ -3,6 +3,7 @@
 const Kullanici = require("../models/kullaniciModel");
 const bcrypt = require("bcryptjs"); // Şifreleme kütüphanesini çağırdık
 const jwt = require("jsonwebtoken"); // <-- 1. YENİ EKLENTİ
+//--------------------------------------------------------------------
 // 1. GÜVENLİ KAYIT OLMA (REGISTER)
 exports.kullaniciEkle = async (req, res) => {
   try {
@@ -36,6 +37,7 @@ exports.kullaniciEkle = async (req, res) => {
     res.status(500).json({ hata: error.message });
   }
 };
+//--------------------------------------------------------------------
 // 2. GİRİŞ YAPMA (LOGIN) FONKSİYONU
 exports.girisYap = async (req, res) => {
   try {
@@ -69,6 +71,7 @@ exports.girisYap = async (req, res) => {
     res.status(500).json({ hata: error.message });
   }
 };
+//--------------------------------------------------------------------
 // 2. Tüm Kullanıcıları Getirme Fonksiyonu
 exports.kullanicilariGetir = async (req, res) => {
   try {
@@ -78,7 +81,7 @@ exports.kullanicilariGetir = async (req, res) => {
     res.status(500).json({ hata: error.message });
   }
 };
-
+//--------------------------------------------------------------------
 // 3. KULLANICI GÜNCELLEME (UPDATE)
 exports.kullaniciGuncelle = async (req, res) => {
   try {
@@ -107,7 +110,7 @@ exports.kullaniciGuncelle = async (req, res) => {
     res.status(500).json({ hata: "Güncelleme yapılırken hata oluştu." });
   }
 };
-
+//--------------------------------------------------------------------
 // 4. KULLANICI SİLME (DELETE)
 exports.kullaniciSil = async (req, res) => {
   try {
@@ -126,5 +129,39 @@ exports.kullaniciSil = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ hata: "Silme işleminde hata oluştu." });
+  }
+};
+//--------------------------------------------------------------------
+// 5. PROFİL RESMİ YÜKLEME
+exports.profilResmiYukle = async (req, res) => {
+  try {
+    // Multer dosyayı yüklediyse req.file içinde bilgileri vardır
+    if (!req.file) {
+      return res.status(400).json({ hata: "Lütfen bir resim dosyası seçin!" });
+    }
+
+    // Giriş yapmış olan kullanıcının ID'sini alıyoruz (Auth Middleware'den geliyor)
+    const userId = req.user.id;
+
+    // Resmin yolunu (path) oluşturuyoruz. Örn: uploads/17823...jpg
+    const resimYolu = req.file.path;
+
+    // Veritabanında güncelleme yapıyoruz
+    const guncellenenKullanici = await Kullanici.findByIdAndUpdate(
+      userId,
+      { profilResmi: resimYolu }, // Sadece resim alanını güncelle
+      { new: true }
+    );
+
+    res.json({
+      mesaj: "Profil resmi başarıyla yüklendi! 📸",
+      resimYolu: resimYolu,
+      kullanici: {
+        ad: guncellenenKullanici.ad,
+        profilResmi: guncellenenKullanici.profilResmi,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ hata: "Resim yüklenirken hata oluştu." });
   }
 };

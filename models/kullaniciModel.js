@@ -2,17 +2,26 @@
 const mongoose = require("mongoose");
 
 const KullaniciSchema = new mongoose.Schema({
+  //---------------------------------------------------
   ad: {
     type: String,
     required: true, // İsim girilmesi zorunlu olsun
   },
+  //---------------------------------------------------
   email: {
     type: String,
     required: true,
     unique: true, // Aynı email ile ikinci kez kayıt olunamaz!
   },
-
+  //---------------------------------------------------
   sifre: { type: String, required: true }, // Şifreyi şifrelenmiş (Hash) saklayacağız
+  //---------------------------------------------------
+  // YENİ EKLENEN ALAN:
+  profilResmi: {
+    type: String,
+    default: "default.jpg", // Resim yüklemezse varsayılan bu olsun
+  },
+  //---------------------------------------------------
   tarih: { type: Date, default: Date.now },
 });
 

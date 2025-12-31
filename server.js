@@ -9,6 +9,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+//--------------------------------------------------------------------
+// Uploads klasörünü herkese açık (public) yap
+// Böylece yüklenen resimlere tarayıcıdan erişilebilir.
+app.use("/uploads", express.static("uploads"));
 
 // --- VERİTABANI BAĞLANTISI ---
 // Buraya kendi aldığın linki yapıştır. <password> kısmını silip şifreni yaz.

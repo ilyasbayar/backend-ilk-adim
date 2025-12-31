@@ -4,6 +4,8 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 // Controller'ı çağırıyoruz
 const kullaniciController = require("../controllers/kullaniciController");
+// En üste Multer ayarını çağır
+const upload = require("../middleware/resimYukleme");
 
 // '/kayit' adresine POST gelirse, controller'daki kullaniciEkle çalışsın
 router.post("/kayit", kullaniciController.kullaniciEkle);
@@ -24,5 +26,14 @@ router.put(
 
 // DELETE metodu ile çalışacak
 router.delete("/sil/:id", authMiddleware, kullaniciController.kullaniciSil);
+
+// YENİ ROTA: Profil Resmi Yükleme
+// 'dosya' kelimesi önemlidir. Thunder Client'ta bu ismi kullanacağız.
+router.post(
+  "/profil-resmi",
+  authMiddleware,
+  upload.single("dosya"),
+  kullaniciController.profilResmiYukle
+);
 
 module.exports = router;
