@@ -1,6 +1,4 @@
-# backend-ilk-adim
 
-Basit bir Node.js/Express backend örneği. Kullanıcı kayıt/giriş ve temel middleware içerir.
 
 # NodeJS Backend Projesi 🚀
 
