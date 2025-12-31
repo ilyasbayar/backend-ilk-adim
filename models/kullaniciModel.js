@@ -21,6 +21,9 @@ const KullaniciSchema = new mongoose.Schema({
     type: String,
     default: "default.jpg", // Resim yüklemezse varsayılan bu olsun
   },
+  // YENİ EKLENEN KISIMLAR:------------------------------------
+  resetPasswordToken: String, // Şifre sıfırlama kodu
+  resetPasswordExpires: Date, // Kodun son kullanma tarihi
   //---------------------------------------------------
   tarih: { type: Date, default: Date.now },
 });
