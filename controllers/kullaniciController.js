@@ -78,3 +78,53 @@ exports.kullanicilariGetir = async (req, res) => {
     res.status(500).json({ hata: error.message });
   }
 };
+
+// 3. KULLANICI GÜNCELLEME (UPDATE)
+exports.kullaniciGuncelle = async (req, res) => {
+  try {
+    // Parametre olarak gelen ID'yi alıyoruz (URL'den)
+    const guncellenecekID = req.params.id;
+
+    // findByIdAndUpdate: Hem bulur hem günceller
+    // 1. parametre: Kim güncellenecek? (ID)
+    // 2. parametre: Yeni veriler nedir? (req.body)
+    // 3. parametre: { new: true } -> Güncellenmiş halini bize geri ver (yoksa eskisini gösterir)
+    const guncellenenKullanici = await Kullanici.findByIdAndUpdate(
+      guncellenecekID,
+      req.body,
+      { new: true }
+    );
+
+    if (!guncellenenKullanici) {
+      return res.status(404).json({ hata: "Kullanıcı bulunamadı!" });
+    }
+
+    res.json({
+      mesaj: "Başarıyla güncellendi",
+      yeniVeri: guncellenenKullanici,
+    });
+  } catch (error) {
+    res.status(500).json({ hata: "Güncelleme yapılırken hata oluştu." });
+  }
+};
+
+// 4. KULLANICI SİLME (DELETE)
+exports.kullaniciSil = async (req, res) => {
+  try {
+    const silinecekID = req.params.id;
+
+    // findByIdAndDelete: Bul ve yok et! 💥
+    const silinenKullanici = await Kullanici.findByIdAndDelete(silinecekID);
+
+    if (!silinenKullanici) {
+      return res.status(404).json({ hata: "Silinecek kullanıcı bulunamadı!" });
+    }
+
+    res.json({
+      mesaj: "Kullanıcı başarıyla silindi.",
+      silinen: { ad: silinenKullanici.ad, email: silinenKullanici.email },
+    });
+  } catch (error) {
+    res.status(500).json({ hata: "Silme işleminde hata oluştu." });
+  }
+};
