@@ -2,17 +2,21 @@
 
 Basit bir Node.js/Express backend örneği. Kullanıcı kayıt/giriş ve temel middleware içerir.
 
-## Çalıştırma
+# NodeJS Backend Projesi 🚀
 
-1. Node.js yüklü olduğundan emin olun
-2. Bağımlılıkları yükleyin:
+Bu proje, Node.js ve Express kullanılarak geliştirilmiş, MongoDB veritabanına bağlı profesyonel bir REST API sistemidir.
 
-```bash
-npm install
-```
+## 🛠 Kullanılan Teknolojiler
+* **Node.js & Express:** Sunucu altyapısı
+* **MongoDB & Mongoose:** Bulut tabanlı veritabanı
+* **JWT (JSON Web Token):** Güvenli giriş sistemi (Authentication)
+* **Bcrypt.js:** Şifre kriptolama
+* **MVC Mimarisi:** Model-View-Controller düzeni
 
-3. Uygulamayı başlatın:
-
-```bash
-node server.js
-```
+## ⚙️ Özellikler
+* ✅ Kullanıcı Kayıt (Register) - Şifreleme ile
+* ✅ Kullanıcı Giriş (Login) - Token üretimi ile
+* ✅ Kullanıcıları Listeleme (Sadece giriş yapanlar)
+* ✅ Profil Güncelleme (Update)
+* ✅ Hesap Silme (Delete)
+* 🔒 Korunmuş Rotalar (Middleware Security)
