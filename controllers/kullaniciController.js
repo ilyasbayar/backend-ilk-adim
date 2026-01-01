@@ -3,6 +3,8 @@
 const Kullanici = require("../models/kullaniciModel");
 const bcrypt = require("bcryptjs"); // Şifreleme kütüphanesini çağırdık
 const jwt = require("jsonwebtoken"); // <-- 1. YENİ EKLENTİ
+const crypto = require("crypto"); // Rastgele kod üretmek için (Node.js içinde var, kurmana gerek yok)
+const emailGonder = require("../utils/emailGonder"); // Az önce yazdığımız postacı
 //--------------------------------------------------------------------
 // 1. GÜVENLİ KAYIT OLMA (REGISTER)
 exports.kullaniciEkle = async (req, res) => {
@@ -163,5 +165,102 @@ exports.profilResmiYukle = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ hata: "Resim yüklenirken hata oluştu." });
+  }
+};
+// --------------------------------------------------------------------------
+
+// 6. ŞİFREMİ UNUTTUM (FORGOT PASSWORD)
+exports.sifremiUnuttum = async (req, res) => {
+  try {
+    // 1. Kullanıcıyı e-posta ile bul
+    const kullanici = await Kullanici.findOne({ email: req.body.email });
+    if (!kullanici) {
+      return res
+        .status(404)
+        .json({ hata: "Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı." });
+    }
+
+    // 2. Rastgele bir Token üret (Reset Token)
+    // 20 karakterlik rastgele bir kod oluşturuyoruz
+    const resetToken = crypto.randomBytes(20).toString("hex");
+
+    // 3. Token'ı ve Süresini Veritabanına Kaydet
+    kullanici.resetPasswordToken = resetToken;
+    kullanici.resetPasswordExpires = Date.now() + 3600000; // 1 Saat geçerli (ms cinsinden)
+
+    await kullanici.save();
+
+    // 4. Sıfırlama Linkini Oluştur
+    // Gerçek hayatta burası sitenin adresi olur (örn: www.site.com/reset/...)
+    const resetUrl = `http://localhost:3000/api/sifre-sifirla/${resetToken}`;
+
+    // 5. E-postayı Gönder
+    const mesaj = `Şifrenizi sıfırlamak için lütfen aşağıdaki linke tıklayın:\n\n${resetUrl}\n\nBu işlemi siz yapmadıysanız lütfen dikkate almayın.`;
+
+    try {
+      await emailGonder({
+        email: kullanici.email,
+        subject: "Şifre Sıfırlama İsteği",
+        message: mesaj,
+      });
+
+      res.status(200).json({
+        mesaj: `E-posta gönderildi: ${kullanici.email}. Lütfen gelen kutunuzu kontrol edin.`,
+      });
+    } catch (error) {
+      // Eğer mail gitmezse, veritabanına kaydettiğimiz token'ı geri siliyoruz
+      kullanici.resetPasswordToken = undefined;
+      kullanici.resetPasswordExpires = undefined;
+      await kullanici.save();
+
+      return res.status(500).json({
+        hata: "E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin.",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ hata: "Bir hata oluştu: " + error.message });
+  }
+};
+//--------------------------------------------------------------------
+// 7. ŞİFREYİ SIFIRLAMA (RESET PASSWORD) - LİNKE TIKLAYINCA ÇALIŞIR
+exports.sifreyiSifirla = async (req, res) => {
+  try {
+    // 1. Token'ı URL'den alıyoruz (params)
+    const gelenToken = req.params.token;
+    const { yeniSifre } = req.body;
+
+    // 2. Bu token'a sahip ve süresi dolmamış kullanıcıyı bul
+    // $gt: Greater Than (Büyükse) demektir. Yani son kullanma tarihi şu andan büyük olmalı.
+    const kullanici = await Kullanici.findOne({
+      resetPasswordToken: gelenToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!kullanici) {
+      return res
+        .status(400)
+        .json({ hata: "Geçersiz veya süresi dolmuş token!" });
+    }
+
+    // 3. Yeni şifreyi kriptola (Hash)
+    const sifreliYeniSifre = await bcrypt.hash(yeniSifre, 10);
+
+    // 4. Bilgileri güncelle
+    kullanici.sifre = sifreliYeniSifre;
+    kullanici.resetPasswordToken = undefined; // Token'ı sil (tek kullanımlık olsun)
+    kullanici.resetPasswordExpires = undefined;
+
+    await kullanici.save();
+
+    res
+      .status(200)
+      .json({
+        mesaj:
+          "Şifreniz başarıyla değiştirildi! Artık yeni şifrenizle giriş yapabilirsiniz.",
+      });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ hata: "Şifre değiştirilirken hata oluştu: " + error.message });
   }
 };

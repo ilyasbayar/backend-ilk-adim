@@ -36,4 +36,10 @@ router.post(
   kullaniciController.profilResmiYukle
 );
 
+// DİKKAT: Burada 'authMiddleware' YOK. Çünkü şifresini unutan adam giriş yapamaz.
+router.post("/sifremi-unuttum", kullaniciController.sifremiUnuttum);
+
+// URL şuna benzeyecek: /api/sifre-sifirla/a3f12bc... (uzun token kodu)
+router.post("/sifre-sifirla/:token", kullaniciController.sifreyiSifirla);
+
 module.exports = router;
